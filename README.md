@@ -9,18 +9,18 @@
 
 ## Techniques:
 
-### Dimensionality Reduction
+#### Dimensionality Reduction
 
 
 
-### Feature Selection
+#### Feature Selection
 
 
 
-### Association Analysis
+#### Association Analysis
 
 
-### Anomaly Detection
+#### Anomaly Detection
 
 
 
