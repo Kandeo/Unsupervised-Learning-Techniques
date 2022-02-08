@@ -5,23 +5,21 @@
 
 #### By **Christine Kiki**
 
-## Description
 Unsupervised learning is a machine learning technique in which models are not supervised using training dataset. Instead, models itself find the hidden patterns and insights from the given data.  
+
+## Description
+
+Carrefour Kenya are currently undertaking a project that will inform the marketing department on the most relevant marketing strategies that will result in the highest number of sales. This project aims to explore a recent marketing dataset by performing various unsupervised learning techniques and providing insights.
 
 ## Techniques:
 
-#### Dimensionality Reduction
+1. Dimensionality Reduction
 
+2. Feature Selection
 
+3. Association Analysis
 
-#### Feature Selection
-
-
-
-#### Association Analysis
-
-
-#### Anomaly Detection
+4. Anomaly Detection
 
 
 
