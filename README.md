@@ -5,7 +5,7 @@
 
 #### By **Christine Kiki**
 
-Unsupervised learning is a machine learning technique in which models are not supervised using training dataset. Instead, models itself find the hidden patterns and insights from the given data.  
+Unsupervised learning is a machine learning technique in which models are not supervised using training dataset. Instead, it models itself finding the hidden patterns and insights from the given data.  
 
 ## Description
 
