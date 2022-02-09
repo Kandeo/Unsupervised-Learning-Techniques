@@ -1,0 +1,137 @@
+---
+title: "Independent Week 14"
+author: "Christine Kandeo"
+date: "2/5/2022"
+output: html_document
+---
+
+ 
+# 1. Data Preparation
+
+Loading Libraries
+``` {r}
+#Loading the relevant libraries:
+library(tidyverse)
+
+#For association:
+library(arules)
+
+#For mapping rules:
+library(arulesViz)
+
+
+```
+
+
+Loading the Dataset
+```{r}
+#Importing the data to the Global Environment:
+Commodities <- read.transactions("http://bit.ly/SupermarketDatasetII", header = TRUE, sep = ",")
+
+#Exploring the data using the Summary function:
+summary(Commodities)
+
+```
+- The dataset has 119 columns with 7,500 rows/itemsets.
+
+- The most frequent Item is Mineral Water.
+
+
+```{r}
+#Previewing the first five transactions:
+inspect(Commodities[1:5])
+```
+
+
+```{r}
+#Examine the frequency of the items:
+itemFrequency(Commodities[, 1:3])
+
+```
+
+```{r}
+#Plotting a FrequencyPlot to determine the frequency of items appearing in the Market Basket:
+itemFrequencyPlot(Commodities, support = 0.025, cex.names=0.8, xlim = c(0,0.3),type = "relative", horiz = TRUE, col = "dark red", las = 1, topN = 10, 
+xlab = paste("Proportion of Market Baskets Containing Item",
+"\n(Item Relative Frequency or Support)"))
+
+```
+
+Mineral Water and Eggs are the top most purchased items in the store.
+
+
+# Association Rule Mining
+
+```{r}
+#Using the default settings to see the number of rules learned:
+apriori(Commodities)
+
+```
+
+Using the Default settings results in zero rules learned
+
+
+```{r}
+#Setting better support and confidence levels to learn more rules:
+Commodityrules <- apriori(Commodities, parameter = list(support = 0.001, confidence = 0.7, 
+    minlen = 2))
+
+```
+
+Using a Confidence of 0.7 and Support of 0.001 results in 198 Rules learned.
+
+
+```{r}
+#Evaluating the Model performance(summary of commodities association)
+summary(Commodityrules)
+
+```
+
+```{r}
+#Looking at the first three rules:
+inspect(Commodityrules[1:3])
+
+```
+# Targeting Items
+
+
+1. If customers buy Mineral Water, what are they likely to buy?
+
+```{r}
+#To find out which items are likely to be purchased with mineral water:
+rules<-apriori(data=Commodities, parameter=list(supp=0.001,conf = 0.8), 
+ appearance = list(default="lhs",rhs="mineral water"),
+ control = list(verbose=F))
+ rules<-sort(rules, decreasing=TRUE,by="confidence")
+ inspect(rules[1:5])
+
+ 
+```
+
+Above are the products that are commonly bought with Mineral water.
+
+
+# Assosiation Rule Visualization
+
+Representing the association rules for commonly bought products with Mineral Water below in a network diagram:
+
+```{r}
+#A graph to map the rules:
+plot(rules[1:5], method="graph")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
