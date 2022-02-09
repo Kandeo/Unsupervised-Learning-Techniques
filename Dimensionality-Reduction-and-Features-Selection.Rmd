@@ -1,0 +1,289 @@
+---
+title: "Independent Week 14"
+author: "Christine Kandeo"
+date: "2/5/2022"
+output: html_document
+---
+
+# DEFINING THE QUESTION
+
+# Specific Data Analytics Question
+
+Exploring and reducing the recent Carefour Marketing data using Principal Component Analysis and selecting the best features.
+
+
+# Metrics for Success
+
+Accurately determining the Principal Component's explaining most of the variability in the data and selecting the best features
+
+
+# Understanding the Context
+
+Carrefour Kenya are currently undertaking a project that will inform the marketing department on the most relevant marketing strategies that will result in the highest number of sales. This project aims to explore a recent marketing dataset by performing various unsupervised learning techniques and providing insights.
+
+# Experimental Design.
+
+1.Data Preparation
+
+ -  Loading the dataset
+ 
+ -  Data Uniformity
+ 
+ -  Checking for Missing/Duplicate Values
+ 
+ 
+2.Dimensionality Reduction
+
+ - Principal Component Analysis
+ 
+ 
+3.Feature Selection
+
+ - Wrapper Method
+ 
+ - Filter Method
+ 
+
+4. Conclusions and Recommendations
+
+
+  
+# Data Relevance
+
+ Invoice id - Computer generated sales slip invoice identification number
+
+ Branch - Branch of the Supermarket (A, B and C)
+
+ Customer type - Type of customers, recorded by Members for customers using member card and Normal for without member card
+
+ Gender - Male or Female
+
+ Product line - General item categorization groups: Electronic accessories, Fashion accessories, Food and beverages, Health and beauty, Home and lifestyle, Sports and travel
+
+ Unit price - Price of each product
+
+ Quantity - Number of products purchased by customer
+
+ Tax - 5% tax fee for customer buying
+
+ Date - Date of purchase (Record available from January 2019 to March 2019)
+
+ Time - Purchase time
+
+ Payment - Payment used by customer for purchase (3 methods are available – Cash, Credit card and Ewallet)
+
+ COGS - Cost of goods sold
+
+ Gross margin percentage - Gross margin percentage
+
+ Gross income - Gross income
+
+ Rating - Customer stratification rating on their overall shopping experience (On a scale of 1 to 10)
+ 
+ Total - Total price including tax.
+ 
+ 
+# 1. Data Preparation
+
+Loading Libraries
+``` {r}
+#Loading the relevant libraries:
+library(stats)
+library(devtools)
+library(ggbiplot)
+library(caret)
+library(GGally)
+
+#For data manipulation:
+library(dplyr)
+
+#For visualization:
+library(ggcorrplot)
+library(ggplot2)
+
+#For Feature selection:
+library(clustvarsel)
+library(mclust)
+library(corrplot)
+
+```
+
+
+Loading the Dataset
+```{r}
+#Importing the data to the Global Environment:
+Sales <- read.csv("http://bit.ly/CarreFourDataset", header = TRUE, sep = ",")
+
+#Printing the first 4 rows of the dataframe
+head(Sales, n=4)
+
+```
+
+```{r}
+#Checking the Number of Rows and Columns:
+dim(Sales)
+
+```
+The Dataset is made up of 1,000 Rows and 16 Columns
+
+
+Data Uniformity
+```{r}
+#Getting Information on the data types on each respective column:
+sapply(Sales, class)
+
+```
+
+```{r}
+#Viewing the full information:
+str(Sales)
+
+```
+
+
+Missing Values
+```{r}
+#Checking for null entries in each column:
+colSums(is.na(Sales))
+
+#For the entire data set: 
+sum(is.na(Sales))
+
+```
+The dataset has no missing values
+
+
+Duplicate values
+```{r}
+#Checking for identical entries:
+sum(duplicated(Sales))
+
+```
+The dataset has no identical entries
+
+
+# 2. Dimensionality Reduction
+
+This process involves reducing the dimensions of the feature set. 
+
+
+Technique: Principal Component Analysis
+
+```{r}
+#Checking PCA eligibility for linear dependency:
+#Creating a dataframe Cr:
+Dr<- Sales
+
+#Visualizing the Plot
+corr_map <- ggcorr(Dr[, 1:16], method=c("everything", "pearson"), label=TRUE, hjust = .90, size = 3, layout.exp = 2)
+corr_map
+
+```
+
+The Plot above shows presence of Multicollinearity. PCA can effectively take advantage of Multicollinearity by combining the highly correlated variables into a set of uncorrelated variables.
+
+
+```{r}
+#Implementing PCA:
+#Since PCA only accepts continuous variables, the categorical observations are ignored
+#The Center argument is True so as to shift the variables to Zero centered
+#Scale is true as the variables measurements are in different scales:
+
+Pca <- prcomp(Sales[,c(6:8, 12, 14, 15)], center = TRUE, scale = TRUE)
+
+#Displaying the information on Standard deviation and Loadings:
+summary(Pca)
+
+```
+The First component explains 65% of the variability in the data set. The Second component explains 17% of total variability in the data set.
+
+This indicates the first two components explain 82% of the Total variation in the data set.
+
+```{r}
+#Plotting a scree plot of the Eigenvalues:  
+plot(Pca)
+screeplot(Pca, type = "line", main = "Scree plot of Eigenvalues")
+
+```
+
+The Scree Plot returns a plot of the variances (y-axis) associated with the PC's (x-axis). 
+
+It shows how many Pc's to retain for further analysis. In this case, 6 with the first 2 Pc's explaining most of the variability in the data.
+
+```{r}
+#Making a biplot, which includes both the position of each sample in terms of PC1 and PC2 and showing how the initial variables map onto this: 
+ggbiplot(Pca, obs.scale = 0.8, var.scale = 1, groups = as.factor(Sales$Quantity), ellipse = TRUE, circle = TRUE)
+
+
+```
+
+The plot shows how samples relate to one another in the PCA based on the groups generated from quantity.
+
+
+From the analysis, the first 2 Principal Components explain most of the variability in the data.
+
+
+# 3. Feature Selection
+
+This is the process of filtering irrelevant or redundant features from the dataset. 
+
+Having irrelevant features in the data can decrease the accuracy of the models and make a model learn based on irrelevant features.
+
+Techniques applied are:
+
+
+1. Wrapper Method
+
+```{r}
+#Using the clustvarsel function to find the optimal subset of variables in the dataset: 
+out = clustvarsel(Sales[,c(6:8, 12, 14, 15)])
+out
+
+
+```
+
+The subset to be used for the Clustering Model is composed of Cogs and Unit Price
+
+
+2. Filter Method
+
+```{r}
+#Using the findcorrelation function to create a subset of variables:
+#Creating a dataframe Core:
+Core <- subset(Sales, select = -c(Date, Time, Invoice.ID, Customer.type, Branch, Gender, Product.line, Payment, gross.margin.percentage, Total))
+
+
+#Calculate correlation matrix:
+correlationMatrix <- cor(Core)
+
+#Finding attributes that are highly corrected (ideally >0.75):
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.75)
+
+#Printing indexes of highly correlated attributes:
+names(Core[,highlyCorrelated])
+
+
+```
+Tax and Cogs are the highly correlated features. They have a perfect positive correlation of 1.
+
+```{r}
+#Removing the Redundant Features:
+Core2 <- Core[-highlyCorrelated]
+
+#Visualizing the representation:
+par(mfrow = c(1, 2))
+corrplot(correlationMatrix, order = "hclust")
+corrplot(cor(Core2), order = "hclust")
+
+```
+
+After removing redundant variables, the best Features are Rating, Unit Price, Quantity and Gross Income.
+
+# 4. Conclusions and Recommendations
+
+ - The filter measure is used as its proven to be fast to compute while still capturing the usefulness of the feature set.
+
+ - The wrapper method on the other hand uses a predictive model to score feature subsets.Each new subset is used to train a model counting the number of mistakes made (Error rate of the model). This training makes the method Computationally Intensive but provides the best performing features.
+
+ - The fact that the features selected from the Filter method are not tuned to a specific type of predictive model, The best recommended features are: Cost Of Goods Sold and Unit Price.
+
