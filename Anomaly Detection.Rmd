@@ -1,0 +1,121 @@
+---
+title: "Independent Week 14"
+author: "Christine Kandeo"
+date: "2/5/2022"
+output: html_document
+---
+
+ 
+# 1. Data Preparation
+
+Loading Libraries
+``` {r}
+#Loading the relevant libraries:
+library(tidyverse)
+library(tibbletime)
+
+#For anomaly detection:
+library(anomalize)
+
+
+```
+
+
+Loading the Dataset
+```{r}
+#Importing the data to the Global Environment:
+Sales <- read.csv("http://bit.ly/CarreFourSalesDataset", header = TRUE, sep = ",")
+
+#Printing the first 4 rows of the dataframe
+head(Sales, n=4)
+
+```
+
+
+```{r}
+#Checking the Number of Rows and Columns:
+dim(Sales)
+
+```
+
+- The dataset has 1,000 Rows and 2 Columns
+
+
+Data Uniformity
+```{r}
+#Getting Information on the data types on each respective column:
+sapply(Sales, class)
+
+```
+
+```{r}
+#Converting the Date column from Character to Datetime:
+Sales$Date <- as.Date(Sales$Date, "%m/%d/%Y")
+
+```
+
+
+```{r}
+#Viewing the full information:
+str(Sales)
+```
+
+Checking for null entries
+```{r}
+#Checking for null entries in each column:
+colSums(is.na(Sales))
+
+#For the entire data set: 
+sum(is.na(Sales))
+
+```
+Duplicated entries
+```{r}
+#Checking for identical entries:
+sum(duplicated(Sales))
+
+```
+The Data lacked Null or Duplicate entries
+
+
+# Anomaly Detection
+
+Involves considering the data points that are outliers or an exceptional event.
+
+
+```{r}
+#Detecting anomalies in the dataset:
+Sales %>%
+  group_by(Date) %>%
+  summarise(Orders = sum(Sales)) %>%
+  time_decompose(Orders, method = "twitter", frequency = "auto", trend = "auto") %>%
+  anomalize(remainder, method = "gesd",alpha = 0.05, max_anoms = 0.2) %>%
+  time_recompose() %>%
+  plot_anomalies(
+  time_recomposed =T,
+  ncol = 3,
+  color_no = "#2c3e50",
+  color_yes = "#e31a1c",
+  fill_ribbon = "grey70",
+  size_dots = 2,
+  size_circles = 4)
+ 
+```
+
+
+```{r}
+#Visualizing the decomposition:
+Sales %>%
+  group_by(Date) %>%
+  summarise(Orders = sum(Sales)) %>%
+  time_decompose(Orders, method = "twitter", frequency = "auto", trend = "auto") %>%
+  anomalize(remainder,method = "gesd", alpha = 0.05, max_anoms = 0.2) %>%
+  time_recompose() %>%
+  plot_anomaly_decomposition()
+
+```
+
+From the Plots above, the dataset has anomalies.
+
+Outliers can be detected between February, March and April
+
